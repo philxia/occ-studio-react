@@ -1,7 +1,7 @@
 import React from "react";
 import "./App.css";
 import { CodeEditor } from "./editor/codeEditor";
-import { ModelViewer } from "./viewer/ModelViewer";
+import ModelViewer from "./viewer/ModelViewer";
 import { Nav } from "./Nav";
 
 export function App() {

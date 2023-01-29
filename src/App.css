@@ -1,5 +1,7 @@
 .flex-container {
   display: flex;
+  height: 90vh;
+  width: 100%;
 }
 
 .flex-child {
@@ -8,5 +10,5 @@
 }  
 
 .flex-child:first-child {
-  margin-right: 20px;
+  margin-right: 10px;
 } 

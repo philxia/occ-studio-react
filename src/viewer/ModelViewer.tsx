@@ -1,7 +1,9 @@
 import React, { useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
+import withBRepProvider from "../containers/withBRepProvider";
 
-function Box(props) {
+
+function Box(props: any) {
   // This reference gives us direct access to the THREE.Mesh object
   const ref = useRef();
   // Hold state for hovered and clicked events
@@ -34,3 +36,5 @@ export function ModelViewer() {
     <Box position={[1.2, 0, 0]} />
   </Canvas>);
 }
+
+export default withBRepProvider(ModelViewer);

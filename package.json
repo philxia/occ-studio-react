@@ -11,6 +11,7 @@
     "esbuild"
   ],
   "scripts": {
+    "dev": "ts-node --transpile-only scripts/dev.ts",
     "start": "concurrently --names tsc,esb -c green.bold,blue.bold --kill-others \"yarn:bundle --dev\" \"tsc --watch\" ",
     "build": "concurrently --success --names tsc,esb -c green.bold,blue.bold tsc yarn:bundle",
     "bundle": "node ./esbuild.config.mjs",
@@ -19,22 +20,32 @@
   },
   "dependencies": {
     "@fluentui/react": "^8.104.8",
+    "@monaco-editor/react": "^4.4.6",
     "@react-three/drei": "^9.48.1",
     "@react-three/fiber": "^8.9.1",
-    "@monaco-editor/react": "^4.4.6",
+    "browser-sync": "^2.27.11",
+    "opencascade.js": "2.0.0-beta.c301f5e",
+    "promise-worker": "^2.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "three": "^0.144.0",
     "three-stdlib": "^2.16.2"
   },
   "devDependencies": {
+    "@fastify/static": "^6.7.0",
     "@types/node": "14.14.35",
     "@types/react": "17.0.3",
     "@types/react-dom": "17.0.2",
+    "@types/three": "^0.144.0",
     "concurrently": "6.0.1",
     "create-serve": "1.0.1",
-    "esbuild": "0.11.5",
+    "esbuild": "^0.15.9",
+    "esbuild-copy-static-files": "^0.1.0",
+    "esbuild-css-modules-plugin": "^2.5.2",
+    "esbuild-plugin-inline-image": "^0.0.9",
+    "fastify": "^4.12.0",
     "rimraf": "3.0.2",
+    "ts-node": "^10.9.1",
     "typescript": "4.2.3"
   }
 }
