@@ -1,6 +1,8 @@
 import Editor, { DiffEditor, useMonaco, loader, Monaco } from "@monaco-editor/react";
 import React, { useRef, useState } from "react";
 import "opencascade.js";
+import { BRepProvider } from "../foundations/providers/BRepProvider";
+import BRep from "../foundations/providers/BRep";
 
 export function CodeEditor() {
   const editorRef = useRef(null);
@@ -20,16 +22,16 @@ export function CodeEditor() {
 //  FilletEdges(), ChamferEdges(),
 //  Slider(), Checkbox(), TextInput(), Dropdown()
 
-let holeRadius = Slider("Radius", 30 , 20 , 40);
+// let holeRadius = Slider("Radius", 30 , 20 , 40);
 
-let sphere     = Sphere(50);
-let cylinderZ  =                     Cylinder(holeRadius, 200, true);
-let cylinderY  = Rotate([0,1,0], 90, Cylinder(holeRadius, 200, true));
-let cylinderX  = Rotate([1,0,0], 90, Cylinder(holeRadius, 200, true));
+let sphere     = NewSphere(50);
+// let cylinderZ  =                     Cylinder(holeRadius, 200, true);
+// let cylinderY  = Rotate([0,1,0], 90, Cylinder(holeRadius, 200, true));
+// let cylinderX  = Rotate([1,0,0], 90, Cylinder(holeRadius, 200, true));
 
-Translate([0, 0, 50], Difference(sphere, [cylinderX, cylinderY, cylinderZ]));
+// Translate([0, 0, 50], Difference(sphere, [cylinderX, cylinderY, cylinderZ]));
 
-Translate([-25, 0, 40], Text3D("Hi!", 36, 0.15, 'Consolas'));
+// Translate([-25, 0, 40], Text3D("Hi!", 36, 0.15, 'Consolas'));
 
 // Don't forget to push imported or oc-defined shapes into sceneShapes to add them to the workspace!`;
 
@@ -42,6 +44,13 @@ Translate([-25, 0, 40], Text3D("Hi!", 36, 0.15, 'Consolas'));
       theme="vs-dark"
       onChange={(value, ev) => {
         console.log(value);
+        if (!BRepProvider.promiseWorker || !value) {
+          alert('Not ready');
+          return;
+        }
+        BRepProvider.evaluate(value).then((brep: BRep) => {
+          console.log(brep);
+        });
       }}
       beforeMount={(monaco: Monaco) => {
         // Import Typescript Intellisense Definitions for the relevant libraries...

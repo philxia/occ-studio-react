@@ -5,6 +5,18 @@ import { Difference, Extrude, ForEachEdge, ForEachFace, MakeFaceWithArcInformati
 
 let oc: OpenCascadeInstance;
 const messageHandlers: any = {};
+const sceneShapes: any = [];
+
+export const NewSphere = (radius: number) => {
+  // Construct a Sphere Primitive
+  let spherePlane = new oc.gp_Ax2_3(new oc.gp_Pnt_3(0, 0, 0), new oc.gp_Dir_3(new oc.gp_XYZ_2(0, 0, 1)));
+  let sphere = new oc.BRepPrimAPI_MakeSphere_9(spherePlane, radius);
+  const sphereShape = sphere.Shape();
+  sceneShapes.push(sphereShape);
+  return sphereShape;
+}
+
+
 
 initOpenCascade({
   mainWasm: 'opencascade.full.wasm'
@@ -1043,6 +1055,26 @@ registerPromiseWorker(function (payload: any) {
         fullShapeFaceHashes
       );
       return facesAndEdges;
+    }
+    else { // eval the code directly.
+      try {
+        sceneShapes.length = 0;
+        // I have tried to follow the https://esbuild.github.io/content-types/#direct-eval
+        // to use `var eval2 = eval; eval2(payload.code);` but the scope doesn't recognize
+        // the NewSphere method. So rollback to the original one `eval(payload.code)` with the 
+        // es-build compile warning.
+        eval(payload.code);
+        return sceneShapes.map((shape: any) => {
+          return ShapeToMesh(oc, shape,
+            0.1, {}, {});
+        });
+      } catch (e: any) {
+        console.log(e);
+        // setTimeout(() => {
+        //   e.message = "Line " + currentLineNumber + ": "  + currentOp + "() encountered  " + e.message;
+        //   throw e;
+        // }, 0);
+      }      
     }
   } catch (e) {
     setTimeout(() => {
