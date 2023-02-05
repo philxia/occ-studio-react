@@ -1070,10 +1070,6 @@ registerPromiseWorker(function (payload: any) {
         });
       } catch (e: any) {
         console.log(e);
-        // setTimeout(() => {
-        //   e.message = "Line " + currentLineNumber + ": "  + currentOp + "() encountered  " + e.message;
-        //   throw e;
-        // }, 0);
       }      
     }
   } catch (e) {

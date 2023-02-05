@@ -3,8 +3,12 @@ import React, { useRef, useState } from "react";
 import "opencascade.js";
 import { BRepProvider } from "../foundations/providers/BRepProvider";
 import BRep from "../foundations/providers/BRep";
+import { updateModel } from "../reducers";
+import { useDispatch } from "react-redux";
 
 export function CodeEditor() {
+  const dispatch = useDispatch();
+
   const editorRef = useRef(null);
 
   function handleEditorDidMount(editor: null, monaco: any) {
@@ -50,6 +54,7 @@ let sphere     = NewSphere(50);
         }
         BRepProvider.evaluate(value).then((brep: BRep) => {
           console.log(brep);
+          dispatch(updateModel(brep));
         });
       }}
       beforeMount={(monaco: Monaco) => {

@@ -1,9 +1,9 @@
 {
-  "name": "react-esbuild-starter",
-  "version": "2.1.0",
-  "description": "Starter template for React + Typescript, powered by Esbuild",
+  "name": "opencascade-studio",
+  "version": "0.1.0",
+  "description": "Opencascade Studio with React + Typescript, powered by Esbuild",
   "repository": "https://github.com/belaczek/react-esbuild-starter.git",
-  "author": "Tomas Belada <tomas@belada.net>",
+  "author": "Phil Xia <phil.xia.us@gmail.com>",
   "license": "MIT",
   "keywords": [
     "react",
@@ -23,11 +23,13 @@
     "@monaco-editor/react": "^4.4.6",
     "@react-three/drei": "^9.48.1",
     "@react-three/fiber": "^8.9.1",
+    "@reduxjs/toolkit": "^1.9.2",
     "browser-sync": "^2.27.11",
     "opencascade.js": "2.0.0-beta.c301f5e",
     "promise-worker": "^2.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-redux": "^8.0.5",
     "three": "^0.144.0",
     "three-stdlib": "^2.16.2"
   },

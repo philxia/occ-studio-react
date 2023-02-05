@@ -55,6 +55,12 @@ export class BRepProvider {
         GUIState: BRepProvider.GUIState,
       })
       .then((response: any) => {
+        if (!Array.isArray(response)) {
+          return {
+            faces: [],
+            edges: []
+          };
+        }
         return {
           faces: response[0],
           edges: response[1],
