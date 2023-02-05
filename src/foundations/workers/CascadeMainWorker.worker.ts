@@ -1,7 +1,19 @@
 import initOpenCascade, { OpenCascadeInstance, TopoDS_Shape }  from "opencascade.js";
 import registerPromiseWorker from "promise-worker/register";
 import { Vector3 } from "three";
-import { Difference, Extrude, ForEachEdge, ForEachFace, MakeFaceWithArcInformation, MakeFaceWithLoops, Polygon, Rotate, ShapeToMesh, Translate, Union } from "./CascadeStudioStandardLibrary";
+import { 
+  Difference, 
+  Extrude, 
+  ForEachEdge, 
+  ForEachFace, 
+  MakeFaceWithArcInformation, 
+  MakeFaceWithLoops, 
+  Polygon, 
+  Rotate, 
+  ShapeToMesh, 
+  Translate, 
+  Union 
+} from "./CascadeStudioStandardLibrary";
 
 let oc: OpenCascadeInstance;
 const messageHandlers: any = {};
@@ -14,6 +26,16 @@ export const NewSphere = (radius: number) => {
   const sphereShape = sphere.Shape();
   sceneShapes.push(sphereShape);
   return sphereShape;
+}
+
+export const NewPolygon = (points: number[][], wire: boolean = false) => {
+  return Polygon(oc, points, wire);
+}
+
+export const NewExtrude = (face: any, direction: number[]) => {
+  const extrude = Extrude(oc, face, direction);
+  sceneShapes.push(extrude);
+  return extrude;
 }
 
 

@@ -28,7 +28,44 @@ export function CodeEditor() {
 
 // let holeRadius = Slider("Radius", 30 , 20 , 40);
 
-let sphere     = NewSphere(50);
+const stairWidth1 = 100;
+const treadDepth = 10;
+const riserHeight = 10;
+const run1Steps = 10;
+// 1. stair run 1.
+const stepsLeftSideFacePoints = [];
+if (run1Steps < 2) {
+stepsLeftSideFacePoints.push(
+  [-stairWidth1 / 2, treadDepth * run1Steps, riserHeight * run1Steps],
+  [-stairWidth1 / 2, treadDepth, 0],
+  [-stairWidth1 / 2, 0, 0]
+);
+} else {
+stepsLeftSideFacePoints.push(
+  [-stairWidth1 / 2, treadDepth * run1Steps, riserHeight * run1Steps],
+  [
+    -stairWidth1 / 2,
+    treadDepth * run1Steps,
+    riserHeight * (run1Steps - 1),
+  ],
+  [-stairWidth1 / 2, treadDepth, 0],
+  [-stairWidth1 / 2, 0, 0]
+);
+for (let n = 1; n < run1Steps; n++) {
+  stepsLeftSideFacePoints.push(
+    [-stairWidth1 / 2, treadDepth * (n - 1), riserHeight * n],
+    [-stairWidth1 / 2, treadDepth * n, riserHeight * n]
+  );
+}
+}
+
+stepsLeftSideFacePoints.push([
+    -stairWidth1 / 2,
+    treadDepth * (run1Steps - 1),
+    riserHeight * run1Steps,
+]);
+const stepsLeftSideFace = NewPolygon(stepsLeftSideFacePoints, false);
+const stairRun1 = NewExtrude(stepsLeftSideFace, [stairWidth1, 0, 0]);
 // let cylinderZ  =                     Cylinder(holeRadius, 200, true);
 // let cylinderY  = Rotate([0,1,0], 90, Cylinder(holeRadius, 200, true));
 // let cylinderX  = Rotate([1,0,0], 90, Cylinder(holeRadius, 200, true));
