@@ -16,7 +16,7 @@ export const modelSlice = createSlice({
     updateModel:(state, action: PayloadAction<any>) => {
       const elements: BRep[] = [{
         faces: action.payload.faces[0],
-        edges: []
+        edges: action.payload.faces[1]
       }];
       return {
         elements
