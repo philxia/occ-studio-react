@@ -5,7 +5,7 @@ import { getElements } from "../selectors";
 import { useSelector } from "react-redux";
 import BRep from "../foundations/providers/BRep";
 import { BufferAttribute, BufferGeometry, Vector2, Vector3 } from "three";
-import { OrbitControls } from "@react-three/drei";
+import { GizmoHelper, GizmoViewport, Grid, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 
 function Box(props: any) {
   // This reference gives us direct access to the THREE.Mesh object
@@ -36,9 +36,17 @@ export function ModelViewer() {
 
   return (
     <Canvas>
+      <PerspectiveCamera makeDefault position={[500, -500, 500]} />
       <OrbitControls />
       <ambientLight />
-      <pointLight position={[10, 10, 10]} />
+      <Grid infiniteGrid={true} />
+      <GizmoHelper
+        alignment="bottom-right" // widget alignment within scene
+        margin={[80, 80]} // widget margins (X, Y) 
+        >
+        <GizmoViewport axisColors={['red', 'green', 'blue']} labelColor="black" />
+      </GizmoHelper>
+      <pointLight position={[500, -500, 500]} />
       {/* <Box position={[-1.2, 0, 0]} />
       <Box position={[1.2, 0, 0]} /> */}
       {elements.map((brep: BRep, index: number) => {

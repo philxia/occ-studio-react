@@ -45,7 +45,7 @@ export class BRepProvider {
   }
 
   
-  static evaluate = (code: string): Promise<BRep> => {
+  static evaluate = (code: string): Promise<BRep[]> => {
     if (!BRepProvider.promiseWorker) {
       throw new Error();
     }
@@ -56,15 +56,15 @@ export class BRepProvider {
       })
       .then((response: any) => {
         if (!Array.isArray(response)) {
-          return {
+          return [{
             faces: [],
             edges: []
-          };
+          }];
         }
-        return {
-          faces: response[0],
-          edges: response[1],
-        };
+        return response.map((res) => ({
+          faces: res[0],
+          edges: res[1],
+        }));
       });
   };
 }

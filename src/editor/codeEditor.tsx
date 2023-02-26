@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react";
 import "opencascade.js";
 import { BRepProvider } from "../foundations/providers/BRepProvider";
 import BRep from "../foundations/providers/BRep";
-import { updateModel } from "../reducers";
+import { updateCode, updateModel } from "../reducers";
 import { useDispatch } from "react-redux";
 
 export function CodeEditor() {
@@ -85,14 +85,8 @@ const stairRun1 = NewExtrude(stepsLeftSideFace, [stairWidth1, 0, 0]);
       theme="vs-dark"
       onChange={(value, ev) => {
         console.log(value);
-        if (!BRepProvider.promiseWorker || !value) {
-          alert('Not ready');
-          return;
-        }
-        BRepProvider.evaluate(value).then((brep: BRep) => {
-          console.log(brep);
-          dispatch(updateModel(brep));
-        });
+        if (value !== undefined)
+          dispatch(updateCode(value));
       }}
       beforeMount={(monaco: Monaco) => {
         // Import Typescript Intellisense Definitions for the relevant libraries...

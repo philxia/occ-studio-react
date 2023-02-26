@@ -5,14 +5,46 @@ import {
 } from "@fluentui/react/lib/CommandBar";
 import { IButtonProps } from "@fluentui/react/lib/Button";
 import { setVirtualParent } from "@fluentui/dom-utilities";
+import { BRepProvider } from "./foundations/providers/BRepProvider";
+import BRep from "./foundations/providers/BRep";
+import { updateModel } from "./reducers";
+import { getCode } from "./selectors";
+import { useSelector, useDispatch } from "react-redux";
 
 const overflowProps: IButtonProps = { ariaLabel: "More commands" };
 
 export const CommandBarBasicExample: React.FunctionComponent = () => {
+  const dispatch = useDispatch();
+  const code: string = useSelector(getCode);
+
   return (
     <CommandBar
-      items={_items}
-      overflowItems={_overflowItems}
+      items={[
+        {
+          key: "play",
+          text: "Play",
+          cacheKey: "myCacheKey", // changing this key will invalidate this item's cache
+          iconProps: { iconName: "Play" },
+          onClick: (
+            ev?:
+              | React.MouseEvent<HTMLElement, MouseEvent>
+              | React.KeyboardEvent<HTMLElement>
+              | undefined
+          ) => {
+            ev?.persist();
+            if (!code || code.length < 5 || !BRepProvider.promiseWorker) {
+              alert('Not ready');
+              return;
+            }
+      
+            BRepProvider.evaluate(code).then((breps: BRep[]) => {
+              console.log(breps);
+              dispatch(updateModel(breps));
+            });
+          },
+        },
+      ]}
+      overflowItems={[]}
       overflowButtonProps={overflowProps}
       farItems={_farItems}
       ariaLabel="Inbox actions"
@@ -21,149 +53,6 @@ export const CommandBarBasicExample: React.FunctionComponent = () => {
     />
   );
 };
-
-const _items: ICommandBarItemProps[] = [
-  {
-    key: "newItem",
-    text: "New",
-    cacheKey: "myCacheKey", // changing this key will invalidate this item's cache
-    iconProps: { iconName: "Add" },
-    subMenuProps: {
-      items: [
-        {
-          key: "emailMessage",
-          text: "Email message",
-          iconProps: { iconName: "Mail" },
-          ["data-automation-id"]: "newEmailButton", // optional
-        },
-        {
-          key: "calendarEvent",
-          text: "Calendar event",
-          iconProps: { iconName: "Calendar" },
-        },
-      ],
-    },
-  },
-  {
-    key: "upload",
-    text: "Upload",
-    iconProps: { iconName: "Upload" },
-    subMenuProps: {
-      items: [
-        {
-          key: "uploadfile",
-          text: "File",
-          preferMenuTargetAsEventTarget: true,
-          onClick: (
-            ev?:
-              | React.MouseEvent<HTMLElement, MouseEvent>
-              | React.KeyboardEvent<HTMLElement>
-              | undefined
-          ) => {
-            ev?.persist();
-
-            Promise.resolve().then(() => {
-              const inputElement = document.createElement("input");
-              inputElement.style.visibility = "hidden";
-              inputElement.setAttribute("type", "file");
-
-              document.body.appendChild(inputElement);
-
-              const target = ev?.target as HTMLElement | undefined;
-
-              if (target) {
-                setVirtualParent(inputElement, target);
-              }
-
-              inputElement.click();
-
-              if (target) {
-                setVirtualParent(inputElement, null);
-              }
-
-              setTimeout(() => {
-                inputElement.remove();
-              }, 10000);
-            });
-          },
-        },
-        {
-          key: "uploadfolder",
-          text: "Folder",
-          preferMenuTargetAsEventTarget: true,
-          onClick: (
-            ev?:
-              | React.MouseEvent<HTMLElement, MouseEvent>
-              | React.KeyboardEvent<HTMLElement>
-              | undefined
-          ) => {
-            ev?.persist();
-
-            Promise.resolve().then(() => {
-              const inputElement = document.createElement("input");
-              inputElement.style.visibility = "hidden";
-              inputElement.setAttribute("type", "file");
-
-              (inputElement as { webkitdirectory?: boolean }).webkitdirectory =
-                true;
-
-              document.body.appendChild(inputElement);
-
-              const target = ev?.target as HTMLElement | undefined;
-
-              if (target) {
-                setVirtualParent(inputElement, target);
-              }
-
-              inputElement.click();
-
-              if (target) {
-                setVirtualParent(inputElement, null);
-              }
-
-              setTimeout(() => {
-                inputElement.remove();
-              }, 10000);
-            });
-          },
-        },
-      ],
-    },
-  },
-  {
-    key: "share",
-    text: "Share",
-    iconProps: { iconName: "Share" },
-    onClick: () => console.log("Share"),
-  },
-  {
-    key: "download",
-    text: "Download",
-    iconProps: { iconName: "Download" },
-    onClick: () => console.log("Download"),
-  },
-];
-
-const _overflowItems: ICommandBarItemProps[] = [
-  {
-    key: "move",
-    text: "Move to...",
-    onClick: () => console.log("Move to"),
-    iconProps: { iconName: "MoveToFolder" },
-  },
-  {
-    key: "copy",
-    text: "Copy to...",
-    onClick: () => console.log("Copy to"),
-    iconProps: { iconName: "Copy" },
-  },
-  {
-    key: "rename",
-    text: "Rename...",
-    onClick: () => console.log("Rename"),
-    iconProps: { iconName: "Edit" },
-  },
-];
 
 const _farItems: ICommandBarItemProps[] = [
   {
@@ -189,3 +78,4 @@ const _farItems: ICommandBarItemProps[] = [
 export function Nav() {
   return (<CommandBarBasicExample />);
 }
+
