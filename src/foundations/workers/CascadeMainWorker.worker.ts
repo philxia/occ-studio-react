@@ -13,20 +13,21 @@ import {
 let oc: OpenCascadeInstance;
 const messageHandlers: any = {};
 const sceneShapes: any = [];
+const controlledParameters: any = [];
 
 export const NewSphere = (radius: number) => {
   // Construct a Sphere Primitive
-  let spherePlane = new oc.gp_Ax2_3(
+  const spherePlane = new oc.gp_Ax2_3(
     new oc.gp_Pnt_3(0, 0, 0),
     new oc.gp_Dir_3(new oc.gp_XYZ_2(0, 0, 1))
   );
-  let sphere = new oc.BRepPrimAPI_MakeSphere_9(spherePlane, radius);
+  const sphere = new oc.BRepPrimAPI_MakeSphere_9(spherePlane, radius);
   const sphereShape = sphere.Shape();
   sceneShapes.push(sphereShape);
   return sphereShape;
 };
 
-export const NewPolygon = (points: number[][], wire: boolean = false) => {
+export const NewPolygon = (points: number[][], wire = false) => {
   return Polygon(oc, points, wire);
 };
 
@@ -35,6 +36,39 @@ export const NewExtrude = (face: any, direction: number[]) => {
   sceneShapes.push(extrude);
   return extrude;
 };
+
+export const NewMeasurableParameter = (name: string, value: number, min: number, max: number, visible: boolean) =>{
+  let newParam = controlledParameters.find((param: any) => param.name === name);
+  if (newParam === undefined) {
+    newParam = {
+      type: 'MEASURABLE_PARAMETER',
+      name: name,
+      value,
+      range: {
+        min,
+        max
+      },
+      visible,
+    };
+    controlledParameters.push(newParam);
+  }   
+  if (visible !== undefined) newParam.visible = visible;
+  return newParam;
+}
+
+export const NewBooleanParameter = (name: string, value: boolean, visible: boolean) =>{
+  let newParam = controlledParameters.find((param: any) => param.name === name);
+  if (newParam === undefined) {
+    newParam = {
+      type: 'BOOLEAN_PARAMETER',
+      name: name,
+      value,
+      visible,
+    };
+    controlledParameters.push(newParam);
+  }   
+  return newParam;
+}
 
 initOpenCascade({
   mainWasm: "opencascade.full.wasm",
@@ -45,7 +79,7 @@ initOpenCascade({
   // Ping Pong Messages Back and Forth based on their registration in messageHandlers
   onmessage = function (e) {
     if (!e.data.type) return;
-    let response = messageHandlers[e.data.type](e.data.payload);
+    const response = messageHandlers[e.data.type](e.data.payload);
     if (response) {
       postMessage({ type: e.data.type, payload: response });
     }
@@ -55,28 +89,43 @@ initOpenCascade({
   postMessage({ type: "startupCallback" });
 });
 
-registerPromiseWorker(function (payload: any) {
+registerPromiseWorker(function (payload: {data: {code: string, parameters: any}}) {
   // let opNumber = 0; // This keeps track of the progress of the evaluation
   // const GUIState = payload.GUIState;
+  const parameters = payload.data.parameters;
   // let currentShape;
   // let sceneBuilder;
   try {
     // eval the code directly.
     try {
       sceneShapes.length = 0;
+      if (Array.isArray(parameters) && parameters.length > 0) {
+        parameters.forEach((param: any) => {
+          const parameter = controlledParameters.find((p: any) => param.name === p.name);
+          if (parameter) {
+            parameter.value = param.value;
+            parameter.visible = param.visible;
+          }
+        });
+      } else {
+        controlledParameters.length = 0;
+      }
       // I have tried to follow the https://esbuild.github.io/content-types/#direct-eval
       // to use `var eval2 = eval; eval2(payload.code);` but the scope doesn't recognize
       // the NewSphere method. So rollback to the original one `eval(payload.code)` with the
       // es-build compile warning.
-      eval(payload.code);
-      return sceneShapes.map((shape: any) => {
-        let fullShapeEdgeHashes: any = {}; let fullShapeFaceHashes: any = {};
-        Object.assign(fullShapeEdgeHashes, ForEachEdge(oc, shape, (index, edge) => { }));
-        ForEachFace(oc, shape, (index: number, face: any) => {
-          fullShapeFaceHashes[face.HashCode(100000000)] = index;
-        });
-        return ShapeToMesh(oc, shape, 0.1, fullShapeEdgeHashes, fullShapeFaceHashes);
-      });
+      eval(payload.data.code);
+      return {
+        shapes: sceneShapes.map((shape: any) => {
+          const fullShapeEdgeHashes: any = {}; const fullShapeFaceHashes: any = {};
+          Object.assign(fullShapeEdgeHashes, ForEachEdge(oc, shape, (index, edge) => { }));
+          ForEachFace(oc, shape, (index: number, face: any) => {
+            fullShapeFaceHashes[face.HashCode(100000000)] = index;
+          });
+          return ShapeToMesh(oc, shape, 0.1, fullShapeEdgeHashes, fullShapeFaceHashes);
+        }),
+        parameters: controlledParameters
+      };
     } catch (e: any) {
       console.log(e);
     }

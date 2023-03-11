@@ -1,85 +1,23 @@
-import Editor, { DiffEditor, useMonaco, loader, Monaco } from "@monaco-editor/react";
-import React, { useRef, useState } from "react";
+import Editor, { Monaco } from "@monaco-editor/react";
+import React, { useRef } from "react";
 import "opencascade.js";
-import { BRepProvider } from "../foundations/providers/BRepProvider";
-import BRep from "../foundations/providers/BRep";
-import { updateCode, updateModel } from "../reducers";
-import { useDispatch } from "react-redux";
+import { updateCode } from "../reducers";
+import { useDispatch, useSelector } from "react-redux";
+import { getCode } from "../selectors";
 
 export function CodeEditor() {
   const dispatch = useDispatch();
-
+  const sourceCode = useSelector(getCode);
   const editorRef = useRef(null);
 
   function handleEditorDidMount(editor: null, monaco: any) {
     editorRef.current = editor;
   }
 
-  // function showValue() {
-  //   alert(editorRef.current?.getValue());
-  // }
-
-  const starterCode = `// Welcome to Cascade Studio!   Here are some useful functions:
-//  Translate(), Rotate(), Scale(), Mirror(), Union(), Difference(), Intersection()
-//  Box(), Sphere(), Cylinder(), Cone(), Text3D(), Polygon()
-//  Offset(), Extrude(), RotatedExtrude(), Revolve(), Pipe(), Loft(), 
-//  FilletEdges(), ChamferEdges(),
-//  Slider(), Checkbox(), TextInput(), Dropdown()
-
-// let holeRadius = Slider("Radius", 30 , 20 , 40);
-
-const stairWidth1 = 100;
-const treadDepth = 10;
-const riserHeight = 10;
-const run1Steps = 10;
-// 1. stair run 1.
-const stepsLeftSideFacePoints = [];
-if (run1Steps < 2) {
-stepsLeftSideFacePoints.push(
-  [-stairWidth1 / 2, treadDepth * run1Steps, riserHeight * run1Steps],
-  [-stairWidth1 / 2, treadDepth, 0],
-  [-stairWidth1 / 2, 0, 0]
-);
-} else {
-stepsLeftSideFacePoints.push(
-  [-stairWidth1 / 2, treadDepth * run1Steps, riserHeight * run1Steps],
-  [
-    -stairWidth1 / 2,
-    treadDepth * run1Steps,
-    riserHeight * (run1Steps - 1),
-  ],
-  [-stairWidth1 / 2, treadDepth, 0],
-  [-stairWidth1 / 2, 0, 0]
-);
-for (let n = 1; n < run1Steps; n++) {
-  stepsLeftSideFacePoints.push(
-    [-stairWidth1 / 2, treadDepth * (n - 1), riserHeight * n],
-    [-stairWidth1 / 2, treadDepth * n, riserHeight * n]
-  );
-}
-}
-
-stepsLeftSideFacePoints.push([
-    -stairWidth1 / 2,
-    treadDepth * (run1Steps - 1),
-    riserHeight * run1Steps,
-]);
-const stepsLeftSideFace = NewPolygon(stepsLeftSideFacePoints, false);
-const stairRun1 = NewExtrude(stepsLeftSideFace, [stairWidth1, 0, 0]);
-// let cylinderZ  =                     Cylinder(holeRadius, 200, true);
-// let cylinderY  = Rotate([0,1,0], 90, Cylinder(holeRadius, 200, true));
-// let cylinderX  = Rotate([1,0,0], 90, Cylinder(holeRadius, 200, true));
-
-// Translate([0, 0, 50], Difference(sphere, [cylinderX, cylinderY, cylinderZ]));
-
-// Translate([-25, 0, 40], Text3D("Hi!", 36, 0.15, 'Consolas'));
-
-// Don't forget to push imported or oc-defined shapes into sceneShapes to add them to the workspace!`;
-
   return (
     <Editor
       defaultLanguage="javascript"
-      defaultValue={starterCode}
+      defaultValue={sourceCode}
       onMount={handleEditorDidMount}
       language="typescript"
       theme="vs-dark"

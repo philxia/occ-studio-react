@@ -7,7 +7,7 @@ import { IButtonProps } from "@fluentui/react/lib/Button";
 import { setVirtualParent } from "@fluentui/dom-utilities";
 import { BRepProvider } from "./foundations/providers/BRepProvider";
 import BRep from "./foundations/providers/BRep";
-import { updateModel } from "./reducers";
+import { updateModel, updateParameters } from "./reducers";
 import { getCode } from "./selectors";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -37,9 +37,10 @@ export const CommandBarBasicExample: React.FunctionComponent = () => {
               return;
             }
       
-            BRepProvider.evaluate(code).then((breps: BRep[]) => {
-              console.log(breps);
-              dispatch(updateModel(breps));
+            BRepProvider.evaluate({code, parameters: []}).then((result: {breps: BRep[]; parameters: []}) => {
+              // console.log(breps);
+              dispatch(updateModel(result.breps));
+              dispatch(updateParameters(result.parameters));
             });
           },
         },

@@ -1,5 +1,6 @@
 const CascadeMainWorker = require('../workers/CascadeMainWorker.worker.ts').default;
 import PromiseWorker from "promise-worker";
+import { ControlledMeasurableParameter } from "../../reducers";
 import BRep from "./BRep";
 
 export class BRepProvider {
@@ -22,7 +23,7 @@ export class BRepProvider {
       BRepProvider.messageHandlers = {};
       BRepProvider.cascadeStudioWorker.onmessage = function (e: any) {
         if (e.data.type in BRepProvider.messageHandlers) {
-          let response = BRepProvider.messageHandlers[e.data.type](
+          const response = BRepProvider.messageHandlers[e.data.type](
             e.data.payload
           );
           if (response) {
@@ -45,26 +46,35 @@ export class BRepProvider {
   }
 
   
-  static evaluate = (code: string): Promise<BRep[]> => {
+  static evaluate = (data: {
+    code: string;
+    parameters: ControlledMeasurableParameter[];
+  }): Promise<{ breps: BRep[]; parameters: any}> => {
     if (!BRepProvider.promiseWorker) {
       throw new Error();
     }
     return BRepProvider.promiseWorker
       .postMessage<BRep, any>({
-        code,
+        data,
         GUIState: BRepProvider.GUIState,
       })
-      .then((response: any) => {
-        if (!Array.isArray(response)) {
-          return [{
-            faces: [],
-            edges: []
-          }];
+      .then((response: {shapes: any; parameters: any;}) => {
+        if (!Array.isArray(response.shapes)) {
+          return {
+            breps: [{
+              faces: [],
+              edges: []
+            }], 
+            parameters: []
+          };
         }
-        return response.map((res) => ({
-          faces: res[0],
-          edges: res[1],
-        }));
+        return {
+          breps: response.shapes.map((res) => ({
+            faces: res[0],
+            edges: res[1],
+          })),
+          parameters: response.parameters
+        };
       });
   };
 }

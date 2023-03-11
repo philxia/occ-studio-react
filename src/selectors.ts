@@ -7,4 +7,8 @@ export const getElements = (state: RootState) => {
 
 export const getCode = (state: RootState) => {
   return state.model.code;
-}
+};
+
+export const getParameters = (state: RootState) => {
+  return state.model.parameters;
+};
