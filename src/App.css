@@ -5,10 +5,30 @@
 }
 
 .flex-child {
+  margin: 10px !important;
   flex: 1;
   border: 2px solid black;
+  width: 50% !important;
+  height: Calc(100% - 10px) !important;
 }  
 
 .flex-child:first-child {
-  margin-right: 10px;
+  margin-right: 0px !important;
 } 
+
+/* .handle-title-bar {
+  height: 32px;
+  background: blue;
+}
+
+.model-viewer {
+  width: Calc(50% - 20px) !important;
+  height: Calc(100% - 100px) !important;
+}
+
+.code-editor {
+  width: Calc(50% - 20px) !important;
+  height: Calc(100% - 100px) !important;
+} */
+
+

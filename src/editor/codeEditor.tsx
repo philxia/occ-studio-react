@@ -17,7 +17,7 @@ export function CodeEditor() {
   return (
     <Editor
       defaultLanguage="javascript"
-      defaultValue={sourceCode}
+      value={sourceCode}
       onMount={handleEditorDidMount}
       language="typescript"
       theme="vs-dark"
