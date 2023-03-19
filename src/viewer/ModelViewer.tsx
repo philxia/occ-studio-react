@@ -83,7 +83,7 @@ export function ModelViewer() {
                 <Checkbox
                   key={index}
                   label={parameter.name}
-                  defaultChecked={parameter.value as boolean}
+                  checked={parameter.value as boolean}
                   onChange={(
                     ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
                     isChecked?: boolean

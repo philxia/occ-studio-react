@@ -62,7 +62,7 @@ const subRoofHeight = NewMeasurableParameter('Sub-roof height', 100, 50, 300, ha
 const subRoofsDistance = NewMeasurableParameter('Sub-roofs distance', 100, 80, 200, hasSubRoof).value;
 const distanceToSubRoof = (roofsDistance/2)*(1-subRoofHeight/roofHeight);
 const subRoofWidth = NewMeasurableParameter('Sub-roofs width', 100, 80, 200, hasSubRoof).value;
-
+const subRoofCenterOffset = NewMeasurableParameter('Sub-roof center offset', 0, -100, 100, hasSubRoof).value;
 
 const roofProfile1Points = [];
 if (hasSubRoof) {
@@ -70,9 +70,9 @@ if (hasSubRoof) {
     [-roofWidth/2, 0, roofHeight],
     [roofWidth/2, 0, roofHeight],
     [roofWidth/2, roofsDistance/2, 0],
-    [subRoofsDistance/2, roofsDistance/2, 0],
-    [0, distanceToSubRoof, subRoofHeight],
-    [-subRoofsDistance/2, roofsDistance/2, 0],
+    [subRoofCenterOffset+subRoofsDistance/2, roofsDistance/2, 0],
+    [subRoofCenterOffset, distanceToSubRoof, subRoofHeight],
+    [subRoofCenterOffset-subRoofsDistance/2, roofsDistance/2, 0],
     [-roofWidth/2, roofsDistance/2, 0],
   );
 } else {
@@ -96,24 +96,25 @@ roofProfile2Points.push(
 );
 const roofProfile2Face = NewPolygon(roofProfile2Points, false);
 const roofProfile2Solid = NewExtrude(roofProfile2Face, [0,0,roofThickness]);
+const mainRoof = NewUnion([roofProfile1Solid, roofProfile2Solid]);
 
 if (hasSubRoof) {
   const subRoofProfile1Points = [];
   subRoofProfile1Points.push(
-    [0, distanceToSubRoof, subRoofHeight],
-    [subRoofsDistance/2, roofsDistance/2, 0],
-    [subRoofsDistance/2, roofsDistance/2 + subRoofWidth, 0],
-    [0, roofsDistance/2 + subRoofWidth, subRoofHeight],
+    [subRoofCenterOffset, distanceToSubRoof, subRoofHeight],
+    [subRoofCenterOffset+subRoofsDistance/2, roofsDistance/2, 0],
+    [subRoofCenterOffset+subRoofsDistance/2, roofsDistance/2 + subRoofWidth, 0],
+    [subRoofCenterOffset, roofsDistance/2 + subRoofWidth, subRoofHeight],
   );
   const subRoofProfile1Face = NewPolygon(subRoofProfile1Points, false);
   const subRoofProfile1Solid = NewExtrude(subRoofProfile1Face, [0,0,roofThickness]); 
 
   const subRoofProfile2Points = [];
   subRoofProfile2Points.push(
-    [0, distanceToSubRoof, subRoofHeight],
-    [0, roofsDistance/2 + subRoofWidth, subRoofHeight],
-    [-subRoofsDistance/2, roofsDistance/2 + subRoofWidth, 0],
-    [-subRoofsDistance/2, roofsDistance/2, 0],
+    [subRoofCenterOffset, distanceToSubRoof, subRoofHeight],
+    [subRoofCenterOffset, roofsDistance/2 + subRoofWidth, subRoofHeight],
+    [subRoofCenterOffset-subRoofsDistance/2, roofsDistance/2 + subRoofWidth, 0],
+    [subRoofCenterOffset-subRoofsDistance/2, roofsDistance/2, 0],
   );
   const subRoofProfile2Face = NewPolygon(subRoofProfile2Points, false);
   const subRoofProfile2Solid = NewExtrude(subRoofProfile2Face, [0,0,roofThickness]); 

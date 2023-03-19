@@ -8,7 +8,9 @@ import {
   ForEachFace,
   Polygon,
   ShapeToMesh,
+  Union,
 } from "./CascadeStudioStandardLibrary";
+import _ from "lodash";
 
 let oc: OpenCascadeInstance;
 const messageHandlers: any = {};
@@ -36,6 +38,13 @@ export const NewExtrude = (face: any, direction: number[]) => {
   sceneShapes.push(extrude);
   return extrude;
 };
+
+export const NewUnion = (objectsToJoin: any) => {
+  const union = Union(oc, objectsToJoin);
+  objectsToJoin.forEach((obj: any) => _.remove(sceneShapes, obj));
+  sceneShapes.push(union);
+  return union;
+}
 
 export const NewMeasurableParameter = (name: string, value: number, min: number, max: number, visible: boolean) =>{
   let newParam = controlledParameters.find((param: any) => param.name === name);
