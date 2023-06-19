@@ -7,15 +7,41 @@ import {
   ForEachEdge,
   ForEachFace,
   Polygon,
+  ArcWithCurveData,
+  LineWithCurveData,
+  FaceWithCurveLoop,
   ShapeToMesh,
   Union,
 } from "./CascadeStudioStandardLibrary";
 import _ from "lodash";
+import { Vector3 } from "three";
 
 let oc: OpenCascadeInstance;
 const messageHandlers: any = {};
 const sceneShapes: any = [];
 const controlledParameters: any = [];
+
+export enum CurveType {
+  ARC = 'ARC',
+  LINE = 'LINE'
+}
+
+export class Arc {
+  public curveType = CurveType.ARC;
+  public center: Vector3 = new Vector3();
+  public radius = 1;
+  public startAngle = 0;
+  public endAngle = Math.PI;
+  public mainDirection: Vector3 = new Vector3(0,0,1);
+  public clockWise = false;
+}
+
+
+export class Line {
+  public curveType = CurveType.LINE;
+  public start: Vector3 = new Vector3();
+  public end: Vector3 = new Vector3();
+}
 
 export const NewSphere = (radius: number) => {
   // Construct a Sphere Primitive
@@ -32,6 +58,22 @@ export const NewSphere = (radius: number) => {
 export const NewPolygon = (points: number[][], wire = false) => {
   return Polygon(oc, points, wire);
 };
+
+export const MakeFaceWithCurveLoop = (curveLoop: Array<Arc | Line>) => {
+  return FaceWithCurveLoop(oc, curveLoop)
+}
+
+export const MakeLineWithCurveData = (curveData: Line ) => {
+  const line = LineWithCurveData(oc, curveData);
+  sceneShapes.push(line);
+  return line;
+}
+
+export const MakeArcWithCurveData = (curveData: Arc ) => {
+  const arc = ArcWithCurveData(oc, curveData);
+  sceneShapes.push(arc);
+  return arc;
+}
 
 export const NewExtrude = (face: any, direction: number[]) => {
   const extrude = Extrude(oc, face, direction);

@@ -15,6 +15,7 @@ import {
   GizmoHelper,
   GizmoViewport,
   Grid,
+  Line,
   OrbitControls,
   PerspectiveCamera,
 } from "@react-three/drei";
@@ -34,9 +35,16 @@ import {
 import { BRepProvider } from "../foundations/providers/BRepProvider";
 
 const stackStyles: Partial<IStackStyles> = {
-  root: { margin: 20, minWidth: 300, position: "absolute", zIndex: 10000 },
+  root: {
+    margin: 20,
+    minWidth: 300,
+    position: "absolute",
+    zIndex: 10000,
+    maxHeight: "60vh",
+    overflowY: "scroll",
+  },
 };
-const stackTokens: IStackTokens = { childrenGap: 20 };
+const stackTokens: IStackTokens = { childrenGap: 10 };
 
 export function ModelViewer() {
   const dispatch = useDispatch();
@@ -60,7 +68,8 @@ export function ModelViewer() {
                   min={parameter.range?.min}
                   max={parameter.range?.max}
                   step={Math.ceil(
-                    (parameter.range?.max || 100 - (parameter.range?.min || 0)) / 10
+                    (parameter.range?.max ||
+                      100 - (parameter.range?.min || 0)) / 10
                   )}
                   defaultValue={parameter.value as number}
                   showValue
@@ -125,8 +134,16 @@ export function ModelViewer() {
         {/* <Box position={[-1.2, 0, 0]} />
       <Box position={[1.2, 0, 0]} /> */}
         {elements.map((brep: BRep, index: number) => {
+          const isCurve = brep.faces.length === 0 && brep.edges.length > 0;
+          const points:Vector3[] = [];
+          for(let i=0; i<brep.edges[0].vertex_coord.length/3; i++) {
+            points.push(new Vector3(brep.edges[0].vertex_coord[3*i],
+              brep.edges[0].vertex_coord[3*i+1],
+              brep.edges[0].vertex_coord[3*i+2]));
+          }
           return (
             <group key={index}>
+              {isCurve && (<Line points={points} />)}
               {brep.faces.map((face: any) => {
                 if (!face || !Array.isArray(face.vertex_coord)) {
                   return null;

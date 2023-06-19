@@ -1,16 +1,16 @@
 import { TopoDS_Shape } from "opencascade.js/dist/module.TKBRep.wasm";
 import { openCascadeInstance } from "opencascade.js/dist/opencascade";
-
+import { Arc, CurveType, Line } from "./CascadeMainWorker.worker";
 
 export const MakeWireWithLoop = (oc: openCascadeInstance, loop: any, elevation: number) => {
-  let polygonWire = new oc.BRepBuilderAPI_MakeWire_1();
+  const polygonWire = new oc.BRepBuilderAPI_MakeWire_1();
   for(let i=0; i<loop.length; i++) {
     const curve = loop[i];
     if (curve.type === 0) { // line
-      let lineEdge = new oc.BRepBuilderAPI_MakeEdge_3(
+      const lineEdge = new oc.BRepBuilderAPI_MakeEdge_3(
         new oc.gp_Pnt_3(curve.x1, curve.y1, elevation),
         new oc.gp_Pnt_3(curve.x2, curve.y2, elevation)).Edge();
-      let lineWire = new oc.BRepBuilderAPI_MakeWire_2(lineEdge).Wire();
+      const lineWire = new oc.BRepBuilderAPI_MakeWire_2(lineEdge).Wire();
       polygonWire.Add_2(lineWire);
     } else if(curve.type === 2) { // arc
       const arcEdge = new oc.BRepBuilderAPI_MakeEdge_9(
@@ -30,7 +30,7 @@ export const MakeWireWithLoop = (oc: openCascadeInstance, loop: any, elevation: 
 
 // loop: Array<LineData|ArcData>
 export const MakeFaceWithLoop = (oc: openCascadeInstance, loop: any, elevation: number) => {
-  let finalWire = MakeWireWithLoop(oc, loop, elevation);
+  const finalWire = MakeWireWithLoop(oc, loop, elevation);
   const curPolygon = new oc.BRepBuilderAPI_MakeFace_15(finalWire, false).Face();
   return curPolygon;
 }
@@ -45,7 +45,7 @@ export const MakeFaceWithLoops = (oc: openCascadeInstance, loops: any, elevation
   let face = MakeFaceWithLoop(oc, outloop, elevation);
   face = new oc.BRepBuilderAPI_MakeFace_2(face);
   for(let i=1; i<loops.length; i++) {
-    let hole = MakeWireWithLoop(oc, loops[i], elevation);
+    const hole = MakeWireWithLoop(oc, loops[i], elevation);
     // The holes must be null or instance of TopoDS_Wire.
     // Will throw an error when got an instance of TopoDS_Shape.
     if (hole.Orientation_1() === oc.TopAbs_Orientation.TopAbs_FORWARD) {
@@ -58,18 +58,18 @@ export const MakeFaceWithLoops = (oc: openCascadeInstance, loops: any, elevation
 
 
 export const Extrude = (oc: openCascadeInstance, face: any, direction: number[]): TopoDS_Shape => {
-  let curExtrusion = new oc.BRepPrimAPI_MakePrism_1(face,
+  const curExtrusion = new oc.BRepPrimAPI_MakePrism_1(face,
       new oc.gp_Vec_4(direction[0], direction[1], direction[2]), false, true);
   return curExtrusion.Shape();
 }
 
 export const ForEachEdge = (oc: openCascadeInstance, shape: TopoDS_Shape, callback: any) => {
-  let edgeHashes: any = {};
+  const edgeHashes: any = {};
   let edgeIndex = 0;
-  let anExplorer = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const anExplorer = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   for (anExplorer.Init(shape, oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE); anExplorer.More(); anExplorer.Next()) {
-    let edge = oc.TopoDS.Edge_1(anExplorer.Current());
-    let edgeHash = edge.HashCode(100000000);
+    const edge = oc.TopoDS.Edge_1(anExplorer.Current());
+    const edgeHash = edge.HashCode(100000000);
     if(!edgeHashes.hasOwnProperty(edgeHash)){
       edgeHashes[edgeHash] = edgeIndex;
       callback(edgeIndex++, edge);
@@ -80,7 +80,7 @@ export const ForEachEdge = (oc: openCascadeInstance, shape: TopoDS_Shape, callba
 
 export const ForEachFace = (oc: openCascadeInstance, shape: TopoDS_Shape, callback: any) => {
   let face_index = 0;
-  let anExplorer = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const anExplorer = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   for (anExplorer.Init(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE); anExplorer.More(); anExplorer.Next()) {
     callback(face_index++, oc.TopoDS.Face_1(anExplorer.Current()));
   }
@@ -97,24 +97,24 @@ export const convertToPnt = (oc: openCascadeInstance, pnt: number[]) => {
   return point;
 }
 
-export const Polygon = (oc: openCascadeInstance, points: number[][], wire: boolean = false) => {
-  let gpPoints = [];
+export const Polygon = (oc: openCascadeInstance, points: number[][], wire = false) => {
+  const gpPoints = [];
   for (let ind = 0; ind < points.length; ind++) {
     gpPoints.push(convertToPnt(oc, points[ind]));
   }
 
-  let polygonWire = new oc.BRepBuilderAPI_MakeWire_1();
+  const polygonWire = new oc.BRepBuilderAPI_MakeWire_1();
   for (let ind = 0; ind < points.length - 1; ind++) {
     // let seg = new oc.GC_MakeSegment_1(gpPoints[ind], gpPoints[ind + 1]).Value();
-    let edge = new oc.BRepBuilderAPI_MakeEdge_3(gpPoints[ind], gpPoints[ind + 1]).Edge();
-    let innerWire = new oc.BRepBuilderAPI_MakeWire_2(edge).Wire();
+    const edge = new oc.BRepBuilderAPI_MakeEdge_3(gpPoints[ind], gpPoints[ind + 1]).Edge();
+    const innerWire = new oc.BRepBuilderAPI_MakeWire_2(edge).Wire();
     polygonWire.Add_2(innerWire);
   }
   // let seg2 = new oc.GC_MakeSegment(gpPoints[points.length - 1], gpPoints[0]).Value();
-  let edge2 = new oc.BRepBuilderAPI_MakeEdge_3(gpPoints[points.length - 1], gpPoints[0]).Edge();
-  let innerWire2 = new oc.BRepBuilderAPI_MakeWire_2(edge2).Wire();
+  const edge2 = new oc.BRepBuilderAPI_MakeEdge_3(gpPoints[points.length - 1], gpPoints[0]).Edge();
+  const innerWire2 = new oc.BRepBuilderAPI_MakeWire_2(edge2).Wire();
   polygonWire.Add_2(innerWire2);
-  let finalWire = polygonWire.Wire();
+  const finalWire = polygonWire.Wire();
 
   if (wire) {
     return finalWire;
@@ -125,14 +125,14 @@ export const Polygon = (oc: openCascadeInstance, points: number[][], wire: boole
 
 
 // TODO: These ops can be more cache optimized since they're multiple sequential ops
-export const Union = (oc: openCascadeInstance, objectsToJoin: any, fuzzValue: number = 0, keepEdges: boolean = false) => {
+export const Union = (oc: openCascadeInstance, objectsToJoin: any, fuzzValue = 0, keepEdges = false) => {
   if (!fuzzValue) { fuzzValue = 0.1; }
 
   let combined = objectsToJoin[0];
   if (objectsToJoin.length > 1) {
     for (let i = 0; i < objectsToJoin.length; i++) {
       if (i > 0) {
-        let combinedFuse = new oc.BRepAlgoAPI_Fuse_3(combined, objectsToJoin[i], new oc.Message_ProgressRange_1());
+        const combinedFuse = new oc.BRepAlgoAPI_Fuse_3(combined, objectsToJoin[i], new oc.Message_ProgressRange_1());
         // combinedFuse.SetFuzzyValue(fuzzValue);
         combinedFuse.Build(new oc.Message_ProgressRange_1());
         combined = combinedFuse.Shape();
@@ -141,7 +141,7 @@ export const Union = (oc: openCascadeInstance, objectsToJoin: any, fuzzValue: nu
   }
 
   if (!keepEdges) {
-    let fusor = new oc.ShapeUpgrade_UnifySameDomain_2(combined, true, true, false); 
+    const fusor = new oc.ShapeUpgrade_UnifySameDomain_2(combined, true, true, false); 
     fusor.Build();
     combined = fusor.Shape();
   }
@@ -152,8 +152,8 @@ export const Difference = (
   oc: openCascadeInstance, 
   mainBody: any, 
   objectsToSubtract: any, 
-  fuzzValue: number = 0.1, 
-  keepEdges: boolean = false
+  fuzzValue = 0.1, 
+  keepEdges = false
   ) => {
   if (!fuzzValue) { fuzzValue = 0.1; }
   if (!mainBody || mainBody.IsNull()) { console.error("Main Shape in Difference is null!"); }
@@ -162,7 +162,7 @@ export const Difference = (
   if (objectsToSubtract.length >= 1) {
     for (let i = 0; i < objectsToSubtract.length; i++) {
       if (!objectsToSubtract[i] || objectsToSubtract[i].IsNull()) { console.error("Tool in Difference is null!"); }
-      let differenceCut = new oc.BRepAlgoAPI_Cut_3(difference, objectsToSubtract[i], new oc.Message_ProgressRange_1());
+      const differenceCut = new oc.BRepAlgoAPI_Cut_3(difference, objectsToSubtract[i], new oc.Message_ProgressRange_1());
       // differenceCut.SetFuzzyValue(fuzzValue);
       differenceCut.Build(new oc.Message_ProgressRange_1());
       difference = differenceCut.Shape();
@@ -170,7 +170,7 @@ export const Difference = (
   }
   
   if (!keepEdges) {
-    let fusor = new oc.ShapeUpgrade_UnifySameDomain_2(difference, true, true, false); 
+    const fusor = new oc.ShapeUpgrade_UnifySameDomain_2(difference, true, true, false); 
     fusor.Build();
     difference = fusor.Shape();
   }
@@ -196,13 +196,13 @@ export const Translate = (
   offset: number[], 
   shapes: TopoDS_Shape[] | TopoDS_Shape
   ) => {
-  let transformation = new oc.gp_Trsf_1();
+  const transformation = new oc.gp_Trsf_1();
   transformation.SetTranslation_1(new oc.gp_Vec_4(offset[0], offset[1], offset[2]));
-  let translation = new oc.TopLoc_Location_2(transformation);
+  const translation = new oc.TopLoc_Location_2(transformation);
   if (!isArrayLike(shapes)) {
     return shapes.Moved(translation, true);
   } else if (shapes.length >= 1) {      // Do the normal translation
-    let newTrans = [];
+    const newTrans = [];
     for (let shapeIndex = 0; shapeIndex < shapes.length; shapeIndex++) {
       newTrans.push(shapes[shapeIndex].Moved(translation, true));
     }
@@ -220,10 +220,10 @@ export const Rotate = (
     rotated = shapes;
   } else {
     let newRot;
-    let transformation = new oc.gp_Trsf_1();
+    const transformation = new oc.gp_Trsf_1();
     transformation.SetRotation_1(
       new oc.gp_Ax1_2(new oc.gp_Pnt_3(0, 0, 0), new oc.gp_Dir_4(axis[0], axis[1], axis[2])), degrees * 0.0174533);
-    let rotation = new oc.TopLoc_Location_2(transformation);
+    const rotation = new oc.TopLoc_Location_2(transformation);
     if (!isArrayLike(shapes)) {
       newRot = shapes.Moved(rotation, true);
     } else if (shapes.length >= 1) {      // Do the normal rotation
@@ -261,10 +261,64 @@ const getPointOfArc = function (arcData: any, t: number ) {
 	}
 
 	const angle = arcData.startAngle + t * deltaAngle;
-	let x = arcData.center.x + arcData.radius * Math.cos( angle );
-	let y = arcData.center.y + arcData.radius * Math.sin( angle );
+	const x = arcData.center.x + arcData.radius * Math.cos( angle );
+	const y = arcData.center.y + arcData.radius * Math.sin( angle );
 	return {x, y};
 };
+
+export const ArcWithCurveData = (oc: openCascadeInstance, arcCurve: Arc) => {
+  const innerArcEdge = new oc.BRepBuilderAPI_MakeEdge_9(
+    new oc.gp_Circ_2(
+        new oc.gp_Ax2_3(new oc.gp_Pnt_3(arcCurve.center.x, arcCurve.center.y, arcCurve.center.z),
+        new oc.gp_Dir_4(arcCurve.mainDirection.x, arcCurve.mainDirection.y, arcCurve.mainDirection.z)), 
+        // new oc.gp_Dir_4(0, 0, 1)), 
+        arcCurve.radius
+      ),
+      arcCurve.startAngle, arcCurve.endAngle
+  ).Edge();
+  return new oc.BRepBuilderAPI_MakeWire_2(innerArcEdge).Wire();
+};
+
+export const LineWithCurveData = (oc: openCascadeInstance, lineCurve: Line) => {
+  const start = new oc.gp_Pnt_3(lineCurve.start.x, lineCurve.start.y, lineCurve.start.z);
+  const end = new oc.gp_Pnt_3(lineCurve.end.x, lineCurve.end.y, lineCurve.end.z);
+  const edge = new oc.BRepBuilderAPI_MakeEdge_3(start, end).Edge();
+  return new oc.BRepBuilderAPI_MakeWire_2(edge).Wire();
+};
+
+
+export const FaceWithCurveLoop = (
+  oc: openCascadeInstance,
+  curveLoop: Array<Arc | Line>
+): any => {
+  const polygonWire = new oc.BRepBuilderAPI_MakeWire_1();
+
+  for( let i=0; i<curveLoop.length; i++) {
+    const curve = curveLoop[i];
+    if (curve.curveType === CurveType.ARC) {
+      const arcCurve = curve as Arc;
+      const innerArcEdge = new oc.BRepBuilderAPI_MakeEdge_9(
+        new oc.gp_Circ_2(
+          new oc.gp_Ax2_3(new oc.gp_Pnt_3(arcCurve.center.x, arcCurve.center.y, arcCurve.center.z),
+          new oc.gp_Dir_4(0, 0, 1)), arcCurve.radius
+          ),
+          arcCurve.startAngle, arcCurve.endAngle
+      ).Edge();
+      const innerArcWire = new oc.BRepBuilderAPI_MakeWire_2(innerArcEdge).Wire();
+      polygonWire.Add_2(innerArcWire);
+    } else if (curve.curveType === CurveType.LINE) {
+      const lineCurve = curve  as Line;
+      const start = new oc.gp_Pnt_3(lineCurve.start.x, lineCurve.start.y, lineCurve.start.z);
+      const end = new oc.gp_Pnt_3(lineCurve.end.x, lineCurve.end.y, lineCurve.end.z);
+      const edge = new oc.BRepBuilderAPI_MakeEdge_3(start, end).Edge();
+      const innerWire = new oc.BRepBuilderAPI_MakeWire_2(edge).Wire();
+      polygonWire.Add_2(innerWire);
+    }
+  }
+  const finalWire = polygonWire.Wire();
+  const curPolygon = new oc.BRepBuilderAPI_MakeFace_15(finalWire, false).Face();
+  return curPolygon;
+}
 
 
 
@@ -290,7 +344,7 @@ export const MakeFaceWithArcInformation = (
     clockwise: true
   };
 
-  let polygonWire = new oc.BRepBuilderAPI_MakeWire_1();
+  const polygonWire = new oc.BRepBuilderAPI_MakeWire_1();
   // inner arc.
   const innerArcEdge = new oc.BRepBuilderAPI_MakeEdge_9(
     new oc.gp_Circ_2(
@@ -305,10 +359,10 @@ export const MakeFaceWithArcInformation = (
   // inner arc.end to outer arc.end.
   const innerArcEndPnt = getPointOfArc(innerArcData, 1);
   const outerArcEndPnt = getPointOfArc(outerArcData, 1);
-  let edgeie2oe = new oc.BRepBuilderAPI_MakeEdge_3(
+  const edgeie2oe = new oc.BRepBuilderAPI_MakeEdge_3(
     new oc.gp_Pnt_3(innerArcEndPnt.x, innerArcEndPnt.y, 0),
     new oc.gp_Pnt_3(outerArcEndPnt.x, outerArcEndPnt.y, 0)).Edge();
-  let ie2oeWire = new oc.BRepBuilderAPI_MakeWire_2(edgeie2oe).Wire();
+  const ie2oeWire = new oc.BRepBuilderAPI_MakeWire_2(edgeie2oe).Wire();
   polygonWire.Add_2(ie2oeWire);
 
   // outer arc.
@@ -321,12 +375,12 @@ export const MakeFaceWithArcInformation = (
   // outer arc.start to inner arc.start.
   const innerArcStartPnt = getPointOfArc(innerArcData, 0);
   const outerArcStartPnt = getPointOfArc(outerArcData, 0);
-  let edgeos2is = new oc.BRepBuilderAPI_MakeEdge_3(new oc.gp_Pnt_3(outerArcStartPnt.x, outerArcStartPnt.y, 0),
+  const edgeos2is = new oc.BRepBuilderAPI_MakeEdge_3(new oc.gp_Pnt_3(outerArcStartPnt.x, outerArcStartPnt.y, 0),
   new oc.gp_Pnt_3(innerArcStartPnt.x, innerArcStartPnt.y, 0)).Edge();
-  let os2isWire = new oc.BRepBuilderAPI_MakeWire_2(edgeos2is).Wire();
+  const os2isWire = new oc.BRepBuilderAPI_MakeWire_2(edgeos2is).Wire();
   polygonWire.Add_2(os2isWire);
 
-  let finalWire = polygonWire.Wire();
+  const finalWire = polygonWire.Wire();
   const curPolygon = new oc.BRepBuilderAPI_MakeFace_15(finalWire, false).Face();
   return curPolygon;
 }
@@ -338,7 +392,7 @@ export const ShapeToMesh = (
   fullShapeEdgeHashes: any, 
   fullShapeFaceHashes: any
   ) => {
-  let facelist: any[] = [], edgeList: any[] = [];
+  const facelist: any[] = [], edgeList: any[] = [];
   try {
     // shape = new oc.TopoDS_Shape(shape);
 
@@ -346,10 +400,10 @@ export const ShapeToMesh = (
     new oc.BRepMesh_IncrementalMesh_2(shape, maxDeviation, false, maxDeviation * 5, false);
 
     // Construct the edge hashes to assign proper indices to the edges
-    let fullShapeEdgeHashes2: any = {};
+    const fullShapeEdgeHashes2: any = {};
 
     // Iterate through the faces and triangulate each one
-    let triangulations: any[] = [];
+    const triangulations: any[] = [];
     ForEachFace(oc, shape, (faceIndex: number, myFace: any) => {
       const tShape = myFace.TShape_1();
       const tShapeType = tShape.get().ShapeType().value; // 
@@ -406,11 +460,11 @@ export const ShapeToMesh = (
       }
 
 
-      let aLocation = new oc.TopLoc_Location_1();
-      let myT = oc.BRep_Tool.Triangulation(myFace, aLocation, 0 /*Poly_MeshPurpose.Poly_MeshPurpose_NONE*/);
+      const aLocation = new oc.TopLoc_Location_1();
+      const myT = oc.BRep_Tool.Triangulation(myFace, aLocation, 0 /*Poly_MeshPurpose.Poly_MeshPurpose_NONE*/);
       if (myT.IsNull()) { console.error("Encountered Null Face!"); return; }
 
-      let this_face: any = {
+      const this_face: any = {
         vertex_coord: [],
         normal_coord: [],
         uv_coord: [],
@@ -421,13 +475,13 @@ export const ShapeToMesh = (
         surface
       };
 
-      let pc = new oc.Poly_Connect_2(myT);
+      const pc = new oc.Poly_Connect_2(myT);
       const numberOfNodes: number = myT.get().NbNodes(); // Note: index start from 1 (not 0)
 
       // write vertex buffer
       this_face.vertex_coord = new Array(numberOfNodes * 3);
       for(let i = 0; i < numberOfNodes; i++) {
-        let p = myT.get().Node(i + 1).Transformed(aLocation.Transformation());
+        const p = myT.get().Node(i + 1).Transformed(aLocation.Transformation());
         this_face.vertex_coord[(i * 3) + 0] = p.X();
         this_face.vertex_coord[(i * 3) + 1] = p.Y();
         this_face.vertex_coord[(i * 3) + 2] = p.Z();
@@ -437,7 +491,7 @@ export const ShapeToMesh = (
       if (myT.get().HasNormals()) {
         this_face.normal_coord = new Array(numberOfNodes * 3);
         for(let i = 0; i < numberOfNodes; i++) {
-          let d = myT.get().Normal(i + 1).Transformed(aLocation.Transformation());
+          const d = myT.get().Normal(i + 1).Transformed(aLocation.Transformation());
           this_face.normal_coord[(i * 3)+ 0] = d.X();
           this_face.normal_coord[(i * 3)+ 1] = d.Y();
           this_face.normal_coord[(i * 3)+ 2] = d.Z();
@@ -448,24 +502,24 @@ export const ShapeToMesh = (
       if (myT.get().HasUVNodes()) {
         this_face.uv_coord = new Array(numberOfNodes*2);
         for(let i = 0; i < numberOfNodes; i++) {
-          let p = myT.get().UVNode(i + 1);
+          const p = myT.get().UVNode(i + 1);
           this_face.uv_coord[(i * 2) + 0] = p.X();
           this_face.uv_coord[(i * 2) + 1] = p.Y();
         }
       }
       
       // write triangle buffer
-      let orient = myFace.Orientation_1();
-      let triangles = myT.get().Triangles();
+      const orient = myFace.Orientation_1();
+      const triangles = myT.get().Triangles();
       this_face.tri_indexes = new Array(triangles.Length() * 3);
       let validFaceTriCount = 0;
       for(let nt = 1; nt <= myT.get().NbTriangles(); nt++) {
-        let t = triangles.Value(nt);
+        const t = triangles.Value(nt);
         let n1 = t.Value(1);
         let n2 = t.Value(2);
-        let n3 = t.Value(3);
+        const n3 = t.Value(3);
         if(orient !== oc.TopAbs_Orientation.TopAbs_FORWARD) {
-          let tmp = n1;
+          const tmp = n1;
           n1 = n2;
           n2 = tmp;
         }
@@ -479,20 +533,20 @@ export const ShapeToMesh = (
       this_face.number_of_triangles = validFaceTriCount;
 
       ForEachEdge(oc, myFace, (index: number, myEdge: any) => {
-        let edgeHash = myEdge.HashCode(100000000);
+        const edgeHash = myEdge.HashCode(100000000);
         if (fullShapeEdgeHashes2.hasOwnProperty(edgeHash)) {
-          let this_edge: any = {
+          const this_edge: any = {
             vertex_coord: [],
             edge_index: -1
           };
 
-          let myP = oc.BRep_Tool.PolygonOnTriangulation_1(myEdge, myT, aLocation);
-          let edgeNodes = myP.get().Nodes();
+          const myP = oc.BRep_Tool.PolygonOnTriangulation_1(myEdge, myT, aLocation);
+          const edgeNodes = myP.get().Nodes();
 
           // write vertex buffer
           this_edge.vertex_coord = new Array(edgeNodes.Length() * 3);
           for(let j = 0; j < edgeNodes.Length(); j++) {
-            let vertexIndex = edgeNodes.Value(j+1);
+            const vertexIndex = edgeNodes.Value(j+1);
             this_edge.vertex_coord[(j * 3) + 0] = this_face.vertex_coord[((vertexIndex-1) * 3) + 0];
             this_edge.vertex_coord[(j * 3) + 1] = this_face.vertex_coord[((vertexIndex-1) * 3) + 1];
             this_edge.vertex_coord[(j * 3) + 2] = this_face.vertex_coord[((vertexIndex-1) * 3) + 2];
@@ -515,21 +569,21 @@ export const ShapeToMesh = (
 
     // Get the free edges that aren't on any triangulated face/surface
     ForEachEdge(oc, shape, (index: number, myEdge: any) => {
-      let edgeHash = myEdge.HashCode(100000000);
+      const edgeHash = myEdge.HashCode(100000000);
       if (!fullShapeEdgeHashes2.hasOwnProperty(edgeHash)) {
-        let this_edge: any = {
+        const this_edge: any = {
           vertex_coord: [],
           edge_index: -1
         };
 
-        let aLocation = new oc.TopLoc_Location_1();
-        let adaptorCurve = new oc.BRepAdaptor_Curve_2(myEdge);
-        let tangDef = new oc.GCPnts_TangentialDeflection_2(adaptorCurve, maxDeviation, 0.1, 2, 1.0e-9, 1.0e-7);
+        const aLocation = new oc.TopLoc_Location_1();
+        const adaptorCurve = new oc.BRepAdaptor_Curve_2(myEdge);
+        const tangDef = new oc.GCPnts_TangentialDeflection_2(adaptorCurve, maxDeviation, 0.1, 2, 1.0e-9, 1.0e-7);
 
         // write vertex buffer
         this_edge.vertex_coord = new Array(tangDef.NbPoints() * 3);
         for(let j = 0; j < tangDef.NbPoints(); j++) {
-          let vertex = tangDef.Value(j+1).Transformed(aLocation.Transformation());
+          const vertex = tangDef.Value(j+1).Transformed(aLocation.Transformation());
           this_edge.vertex_coord[(j * 3) + 0] = vertex.X();
           this_edge.vertex_coord[(j * 3) + 1] = vertex.Y();
           this_edge.vertex_coord[(j * 3) + 2] = vertex.Z();
